@@ -10,42 +10,74 @@
  */
 abstract class View_mPDF_Core extends View {
 
-	public static function factory($file = NULL, array $data = NULL)
+	/*
+	protected static $instance = NULL;
+
+	public static function instance()
 	{
-		return new View_MPDF($file, $data);
+		if (View_mPDF::$instance === NULL)
+		{
+			View_mPDF::$instance = new View_mPDF();
+		}
+
+		return View_mPDF::$instance;
 	}
 
-	public function render($file = NULL)
+	public static function get_instance()
 	{
-		return $this->get_mpdf($file)->output();
+		return View_mPDF::$instance;
+	}
+	*/
+	protected $mpdf = NULL;
+	protected $view_file = NULL;
+
+	public function __construct($file = NULL, array $data = NULL)
+	{
+		parent::__construct($file, $data);
+		$this->mpdf = new mPDF('UTF-8', 'A4');
+	}
+
+	public static function factory($view_file = NULL, array $data = NULL)
+	{
+		return new View_MPDF($view_file, $data);
+	}
+
+	public function render($view_file = NULL)
+	{
+		if (empty($view_file)) $view_file = $this->view_file;
+		// Render the HTML normally
+		$html = parent::render($view_file);
+		$this->mpdf->WriteHTML($html);
+		// Render the HTML to a PDF
+		return $this->mpdf->output();
 	}
 
 	public function download($generated_filename, $view_file = NULL)
 	{
-		$mpdf = $this->get_mpdf($view_file);
-		$mpdf->output($generated_filename, 'D');
+		if (empty($view_file)) $view_file = $this->view_file;
+		// Render the HTML normally
+		$html = parent::render($view_file);
+		$this->mpdf->WriteHTML($html);
+		// Render the HTML to a PDF
+		$this->mpdf->output($generated_filename, 'D');
 	}
 
 	public function inline($generated_filename, $view_file = NULL)
 	{
-		$mpdf = $this->get_mpdf($view_file);
-		$mpdf->output($generated_filename, 'I');
+		if (empty($view_file)) $view_file = $this->view_file;
+		// Render the HTML normally
+		$html = parent::render($view_file);
+		$this->mpdf->WriteHTML($html);
+		// Render the HTML to a PDF
+		$this->mpdf->output($generated_filename, 'I');
 		// Necessary to prevent Kohana from overriding the content-type set inside the previous function - we
 		// explictly set it to the correct type here...
 		Request::current()->headers[] = 'Content-type: application/pdf';
 	}
 
-	private function get_mpdf($view_file)
+	public function get_mpdf()
 	{
-		// Render the HTML normally
-		$html = parent::render($view_file);
-
-		// Render the HTML to a PDF
-		$mpdf = new mPDF('UTF-8', 'A4');
-
-		$mpdf->WriteHTML($html);
-
-		return $mpdf;
+		return $this->mpdf;
 	}
 
 } // End View_MPDF
