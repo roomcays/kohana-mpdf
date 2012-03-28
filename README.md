@@ -40,10 +40,10 @@ Placed in a controller action:
     $this->response->body($pdf);
 
     // Force download
-   $pdf->download('brochure.pdf');
+    $pdf->download('brochure.pdf');
 
     // Set the PDF footer (every page) using directly the MPDF object
-   $pdf->get_mpdf()->SetHTMLFooter('<p>Footer disclaimer</p>');
+    $pdf->get_mpdf()->SetHTMLFooter('<p>Footer disclaimer</p>');
 
 
     
